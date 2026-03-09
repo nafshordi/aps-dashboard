@@ -1,0 +1,1157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>APS Survey Conditional Dashboard</title>
+  <style>
+    :root {
+      --paper: #f3efe3;
+      --panel: rgba(255, 252, 246, 0.88);
+      --ink: #182126;
+      --muted: #66767d;
+      --line: rgba(24, 33, 38, 0.12);
+      --accent: #0e6b77;
+      --accent-2: #d7742d;
+      --accent-3: #c8b58d;
+      --shadow: 0 16px 40px rgba(20, 30, 34, 0.10);
+      --radius: 18px;
+      --font-display: "Avenir Next Condensed", "Gill Sans Nova Condensed", "Franklin Gothic Medium", sans-serif;
+      --font-sans: "Avenir Next", "Helvetica Neue", "Segoe UI", sans-serif;
+      --font-serif: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-sans);
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(215, 116, 45, 0.16), transparent 28%),
+        radial-gradient(circle at top right, rgba(14, 107, 119, 0.18), transparent 34%),
+        linear-gradient(180deg, #efe9da 0%, #f6f2e8 42%, #efe9da 100%);
+      min-height: 100vh;
+    }
+
+    .shell {
+      width: min(1380px, calc(100vw - 32px));
+      margin: 20px auto 28px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, rgba(13, 67, 75, 0.95), rgba(27, 43, 49, 0.96));
+      color: #f6f4ee;
+      border-radius: calc(var(--radius) + 4px);
+      padding: 28px 30px 24px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -80px -110px auto;
+      width: 280px;
+      height: 280px;
+      background: radial-gradient(circle, rgba(215, 116, 45, 0.46), transparent 62%);
+      pointer-events: none;
+    }
+
+    .kicker {
+      display: inline-block;
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(246, 244, 238, 0.76);
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-family: var(--font-display);
+      font-size: clamp(30px, 4vw, 48px);
+      line-height: 0.95;
+      letter-spacing: 0.01em;
+    }
+
+    .hero p {
+      max-width: 920px;
+      margin: 0;
+      line-height: 1.5;
+      font-size: 16px;
+      color: rgba(246, 244, 238, 0.9);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      gap: 18px;
+      margin-top: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .controls {
+      padding: 18px;
+      position: sticky;
+      top: 16px;
+    }
+
+    .controls h2,
+    .chart-panel h2 {
+      margin: 0 0 14px;
+      font-family: var(--font-display);
+      font-size: 22px;
+      letter-spacing: 0.01em;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field.hidden {
+      display: none;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    select,
+    input[type="checkbox"] {
+      font: inherit;
+    }
+
+    select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(24, 33, 38, 0.16);
+      background: rgba(255, 255, 255, 0.9);
+      color: var(--ink);
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0 2px;
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .mode-switch {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .mode-switch button {
+      appearance: none;
+      border: 1px solid rgba(24, 33, 38, 0.12);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.75);
+      color: var(--ink);
+      padding: 11px 12px;
+      font: inherit;
+      font-size: 14px;
+      cursor: pointer;
+      transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+    }
+
+    .mode-switch button:hover {
+      transform: translateY(-1px);
+    }
+
+    .mode-switch button.active {
+      background: linear-gradient(135deg, rgba(14, 107, 119, 0.16), rgba(215, 116, 45, 0.14));
+      border-color: rgba(14, 107, 119, 0.42);
+      font-weight: 700;
+    }
+
+    .filter-switch {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .filter-switch button {
+      appearance: none;
+      border: 1px solid rgba(24, 33, 38, 0.12);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.75);
+      color: var(--ink);
+      padding: 11px 12px;
+      font: inherit;
+      font-size: 14px;
+      cursor: pointer;
+      transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+    }
+
+    .filter-switch button:hover {
+      transform: translateY(-1px);
+    }
+
+    .filter-switch button.active {
+      background: linear-gradient(135deg, rgba(215, 116, 45, 0.18), rgba(190, 66, 66, 0.12));
+      border-color: rgba(190, 66, 66, 0.35);
+      font-weight: 700;
+    }
+
+    .stat-strip {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      border-radius: 14px;
+      padding: 12px 12px 10px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(247,242,233,0.88));
+      border: 1px solid rgba(24, 33, 38, 0.08);
+    }
+
+    .stat .label {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .stat .value {
+      font-family: var(--font-display);
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .note {
+      margin-top: 14px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+
+    .chart-panel {
+      padding: 18px;
+    }
+
+    .prompt-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .prompt-card {
+      border-radius: 16px;
+      padding: 14px;
+      min-height: 152px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(241,235,222,0.78));
+      border: 1px solid rgba(24, 33, 38, 0.08);
+    }
+
+    .prompt-card .eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .prompt-card .title {
+      font-family: var(--font-display);
+      font-size: 22px;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .prompt-card .prompt {
+      font-family: var(--font-serif);
+      font-size: 14px;
+      line-height: 1.45;
+      color: #2f3b40;
+      white-space: pre-line;
+      overflow-wrap: anywhere;
+    }
+
+    .legend {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      margin: 10px 0 16px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .legend-chip {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .swatch {
+      width: 18px;
+      height: 10px;
+      border-radius: 999px;
+    }
+
+    .chart-title {
+      margin: 0 0 8px;
+      font-family: var(--font-display);
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .chart-subtitle {
+      margin: 0 0 16px;
+      font-size: 15px;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+
+    .rows {
+      display: grid;
+      gap: 12px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: minmax(240px, 30%) minmax(280px, 1fr) 210px;
+      gap: 14px;
+      align-items: center;
+      padding: 10px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .row:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .row-label {
+      font-size: 14px;
+      line-height: 1.35;
+      color: var(--ink);
+    }
+
+    .track {
+      position: relative;
+      height: 28px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(24,33,38,0.04), rgba(24,33,38,0.07));
+      overflow: hidden;
+    }
+
+    .bar-overall,
+    .bar-conditional {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      border-radius: 999px;
+    }
+
+    .bar-overall {
+      height: 20px;
+      background: linear-gradient(90deg, rgba(200,181,141,0.72), rgba(184,163,119,0.85));
+    }
+
+    .bar-conditional {
+      height: 12px;
+      background: linear-gradient(90deg, rgba(14,107,119,0.95), rgba(30,134,145,0.95));
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.28) inset;
+    }
+
+    .row-metrics {
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+
+    .row-metrics strong {
+      color: var(--ink);
+    }
+
+    .empty {
+      border-radius: 16px;
+      padding: 18px;
+      background: rgba(255,255,255,0.62);
+      border: 1px dashed rgba(24,33,38,0.18);
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .heatmap-wrap {
+      display: none;
+      overflow: auto;
+      border-radius: 16px;
+      border: 1px solid rgba(24, 33, 38, 0.08);
+      background: rgba(255,255,255,0.78);
+    }
+
+    .heatmap-wrap.visible {
+      display: block;
+    }
+
+    .heatmap-table {
+      display: grid;
+      min-width: 820px;
+    }
+
+    .heatmap-header,
+    .heatmap-row-label,
+    .heatmap-cell {
+      padding: 10px 10px;
+      border-right: 1px solid rgba(24, 33, 38, 0.08);
+      border-bottom: 1px solid rgba(24, 33, 38, 0.08);
+    }
+
+    .heatmap-corner {
+      position: sticky;
+      left: 0;
+      z-index: 3;
+      background: #f8f3e8;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .heatmap-header {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: #f8f3e8;
+      font-size: 13px;
+      line-height: 1.35;
+      color: var(--ink);
+    }
+
+    .heatmap-row-label {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      background: #fcf8f0;
+      font-size: 13px;
+      line-height: 1.35;
+      color: var(--ink);
+    }
+
+    .heatmap-cell {
+      min-height: 78px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      gap: 4px;
+      font-size: 12px;
+      line-height: 1.15;
+    }
+
+    .heatmap-cell strong {
+      font-family: var(--font-display);
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .heatmap-note {
+      margin-top: 12px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+
+    @media (max-width: 1080px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .controls {
+        position: static;
+      }
+
+      .row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .shell {
+        width: min(100vw - 18px, 1380px);
+        margin: 9px auto 22px;
+      }
+
+      .hero {
+        padding: 22px 18px 18px;
+      }
+
+      .prompt-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stat-strip {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="kicker">Interactive conditional survey explorer</div>
+      <h1>APS Big Mysteries Survey Dashboard</h1>
+      <p>
+        Explore how the distribution of answers to one survey question shifts when conditioning on a specific answer to another question.
+        The chart overlays the unconditional distribution in sand and the conditional distribution in teal.
+      </p>
+    </section>
+
+    <section class="grid">
+      <aside class="panel controls">
+        <h2>Controls</h2>
+        <div class="mode-switch">
+          <button id="modeBars" type="button" class="active">Single answer</button>
+          <button id="modeHeatmap" type="button">Question heatmap</button>
+        </div>
+        <div class="filter-switch">
+          <button id="toggleNoOpinion" type="button">Hide No opinion</button>
+          <button id="toggleOther" type="button">Hide Other</button>
+        </div>
+        <div class="field">
+          <label for="conditionQuestion">Conditioning question</label>
+          <select id="conditionQuestion"></select>
+        </div>
+        <div class="field" id="conditionAnswerField">
+          <label for="conditionAnswer">Conditioning answer</label>
+          <select id="conditionAnswer"></select>
+        </div>
+        <div class="field">
+          <label for="targetQuestion">Target question</label>
+          <select id="targetQuestion"></select>
+        </div>
+        <div class="toggle" id="sortField">
+          <input id="sortByConditional" type="checkbox" checked>
+          <label for="sortByConditional">Sort answers by conditional percentage</label>
+        </div>
+
+        <div class="stat-strip">
+          <div class="stat">
+            <div class="label" id="matchedRespondentsLabel">Matched respondents</div>
+            <div class="value" id="matchedRespondents">-</div>
+          </div>
+          <div class="stat">
+            <div class="label" id="targetSampleLabel">Target sample</div>
+            <div class="value" id="targetSample">-</div>
+          </div>
+          <div class="stat">
+            <div class="label">Questions</div>
+            <div class="value" id="questionCount">-</div>
+          </div>
+        </div>
+
+        <div class="note">
+          Bubble sizes are not used here. This dashboard works directly from the raw survey response matrix, using all browser-side calculations after the data file loads.
+        </div>
+      </aside>
+
+      <section class="panel chart-panel">
+        <h2>Conditional Distribution</h2>
+
+        <div class="prompt-grid">
+          <article class="prompt-card">
+            <div class="eyebrow">Condition</div>
+            <div class="title" id="conditionTitle">No conditioning</div>
+            <div class="prompt" id="conditionPrompt">Showing the unconditional distribution across all respondents.</div>
+          </article>
+          <article class="prompt-card">
+            <div class="eyebrow">Target distribution</div>
+            <div class="title" id="targetTitle">-</div>
+            <div class="prompt" id="targetPrompt">-</div>
+          </article>
+        </div>
+
+        <p class="chart-title" id="chartTitle">Distribution</p>
+        <p class="chart-subtitle" id="chartSubtitle"></p>
+
+        <div class="legend">
+          <div class="legend-chip">
+            <span class="swatch" id="legendSwatch1" style="background: linear-gradient(90deg, rgba(200,181,141,0.72), rgba(184,163,119,0.85));"></span>
+            <span id="legendLabel1">Overall distribution</span>
+          </div>
+          <div class="legend-chip">
+            <span class="swatch" id="legendSwatch2" style="background: linear-gradient(90deg, rgba(14,107,119,0.95), rgba(30,134,145,0.95));"></span>
+            <span id="legendLabel2">Conditional distribution</span>
+          </div>
+        </div>
+
+        <div id="rows" class="rows"></div>
+        <div id="heatmapWrap" class="heatmap-wrap"></div>
+        <div id="heatmapNote" class="heatmap-note"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="./survey_data.js"></script>
+  <script>
+    (() => {
+      const data = window.SURVEY_DASHBOARD_DATA;
+      if (!data) {
+        document.body.innerHTML = '<main class="shell"><section class="panel chart-panel"><div class="empty">The survey data file was not found. Make sure <code>survey_data.js</code> sits next to this HTML file.</div></section></main>';
+        return;
+      }
+
+      const questions = data.questions;
+      const respondents = data.respondents;
+
+      const els = {
+        conditionQuestion: document.getElementById('conditionQuestion'),
+        conditionAnswer: document.getElementById('conditionAnswer'),
+        targetQuestion: document.getElementById('targetQuestion'),
+        sortByConditional: document.getElementById('sortByConditional'),
+        conditionAnswerField: document.getElementById('conditionAnswerField'),
+        sortField: document.getElementById('sortField'),
+        modeBars: document.getElementById('modeBars'),
+        modeHeatmap: document.getElementById('modeHeatmap'),
+        toggleNoOpinion: document.getElementById('toggleNoOpinion'),
+        toggleOther: document.getElementById('toggleOther'),
+        matchedRespondents: document.getElementById('matchedRespondents'),
+        matchedRespondentsLabel: document.getElementById('matchedRespondentsLabel'),
+        targetSample: document.getElementById('targetSample'),
+        targetSampleLabel: document.getElementById('targetSampleLabel'),
+        questionCount: document.getElementById('questionCount'),
+        conditionTitle: document.getElementById('conditionTitle'),
+        conditionPrompt: document.getElementById('conditionPrompt'),
+        targetTitle: document.getElementById('targetTitle'),
+        targetPrompt: document.getElementById('targetPrompt'),
+        chartTitle: document.getElementById('chartTitle'),
+        chartSubtitle: document.getElementById('chartSubtitle'),
+        legendLabel1: document.getElementById('legendLabel1'),
+        legendLabel2: document.getElementById('legendLabel2'),
+        legendSwatch1: document.getElementById('legendSwatch1'),
+        legendSwatch2: document.getElementById('legendSwatch2'),
+        rows: document.getElementById('rows'),
+        heatmapWrap: document.getElementById('heatmapWrap'),
+        heatmapNote: document.getElementById('heatmapNote')
+      };
+
+      const NO_CONDITION = '__none__';
+      let currentMode = 'bars';
+      const filters = {
+        hideNoOpinion: false,
+        hideOther: false
+      };
+
+      function fmtPct(value) {
+        return `${value.toFixed(1)}%`;
+      }
+
+      function fmtInt(value) {
+        return new Intl.NumberFormat('en-US').format(value);
+      }
+
+      function shortQuestionLabel(question) {
+        return `${question.id} - ${question.short}`;
+      }
+
+      function isNoOpinionAnswer(answerText) {
+        return answerText.trim().toLowerCase() === 'no opinion';
+      }
+
+      function isOtherAnswer(answerText) {
+        return answerText.trim().toLowerCase() === 'other';
+      }
+
+      function isAnswerVisible(answer) {
+        if (filters.hideNoOpinion && isNoOpinionAnswer(answer.text)) {
+          return false;
+        }
+        if (filters.hideOther && isOtherAnswer(answer.text)) {
+          return false;
+        }
+        return true;
+      }
+
+      function getVisibleAnswerIndexes(question) {
+        const indexes = [];
+        question.answers.forEach((answer, idx) => {
+          if (isAnswerVisible(answer)) {
+            indexes.push(idx);
+          }
+        });
+        return indexes;
+      }
+
+      function getHiddenAnswerSummary() {
+        const hidden = [];
+        if (filters.hideNoOpinion) {
+          hidden.push('No opinion');
+        }
+        if (filters.hideOther) {
+          hidden.push('Other');
+        }
+        return hidden.length ? ` Hidden from calculations: ${hidden.join(' and ')}.` : '';
+      }
+
+      function populateQuestionSelects() {
+        const condFragment = document.createDocumentFragment();
+        const noneOpt = document.createElement('option');
+        noneOpt.value = NO_CONDITION;
+        noneOpt.textContent = 'No conditioning';
+        condFragment.appendChild(noneOpt);
+
+        const targetFragment = document.createDocumentFragment();
+        questions.forEach((question, idx) => {
+          const opt1 = document.createElement('option');
+          opt1.value = String(idx);
+          opt1.textContent = shortQuestionLabel(question);
+          condFragment.appendChild(opt1);
+
+          const opt2 = document.createElement('option');
+          opt2.value = String(idx);
+          opt2.textContent = shortQuestionLabel(question);
+          targetFragment.appendChild(opt2);
+        });
+
+        els.conditionQuestion.appendChild(condFragment);
+        els.targetQuestion.appendChild(targetFragment);
+        els.targetQuestion.value = '1';
+      }
+
+      function getConditionState() {
+        const raw = els.conditionQuestion.value;
+        if (raw === NO_CONDITION) {
+          return { questionIndex: null, answerIndex: null };
+        }
+        const answerRaw = els.conditionAnswer.value;
+        return {
+          questionIndex: Number(raw),
+          answerIndex: answerRaw === '' ? null : Number(answerRaw)
+        };
+      }
+
+      function populateConditionAnswers() {
+        const raw = els.conditionQuestion.value;
+        const previousValue = els.conditionAnswer.value;
+        els.conditionAnswer.innerHTML = '';
+        if (raw === NO_CONDITION) {
+          els.conditionAnswer.disabled = true;
+          const opt = document.createElement('option');
+          opt.value = '';
+          opt.textContent = 'Not applicable';
+          els.conditionAnswer.appendChild(opt);
+          return;
+        }
+
+        const question = questions[Number(raw)];
+        const visibleIndexes = getVisibleAnswerIndexes(question);
+        if (!visibleIndexes.length) {
+          els.conditionAnswer.disabled = true;
+          const opt = document.createElement('option');
+          opt.value = '';
+          opt.textContent = 'No available answers under current filters';
+          els.conditionAnswer.appendChild(opt);
+          return;
+        }
+
+        visibleIndexes.forEach((idx) => {
+          const answer = question.answers[idx];
+          const opt = document.createElement('option');
+          opt.value = String(idx);
+          opt.textContent = `${answer.text} (${answer.count})`;
+          els.conditionAnswer.appendChild(opt);
+        });
+        els.conditionAnswer.disabled = false;
+        if (visibleIndexes.some((idx) => String(idx) === previousValue)) {
+          els.conditionAnswer.value = previousValue;
+        } else {
+          els.conditionAnswer.value = String(visibleIndexes[0]);
+        }
+      }
+
+      function ensureDistinctQuestions() {
+        const condRaw = els.conditionQuestion.value;
+        if (condRaw === NO_CONDITION) {
+          return;
+        }
+        const condIndex = Number(condRaw);
+        const targetIndex = Number(els.targetQuestion.value);
+        if (condIndex !== targetIndex) {
+          return;
+        }
+        const replacement = questions.findIndex((_q, idx) => idx !== condIndex);
+        els.targetQuestion.value = String(replacement === -1 ? targetIndex : replacement);
+      }
+
+      function computeDistribution(targetQuestionIndex, conditionQuestionIndex, conditionAnswerIndex) {
+        const targetQuestion = questions[targetQuestionIndex];
+        const overallCounts = Array(targetQuestion.answers.length).fill(0);
+        const conditionalCounts = Array(targetQuestion.answers.length).fill(0);
+        const visibleTargetAnswers = new Set(getVisibleAnswerIndexes(targetQuestion));
+
+        let overallAnswered = 0;
+        let matchedRespondents = 0;
+        let conditionalAnswered = 0;
+
+        respondents.forEach((response) => {
+          const targetAnswer = response[targetQuestionIndex];
+          if (targetAnswer !== null && visibleTargetAnswers.has(targetAnswer)) {
+            overallCounts[targetAnswer] += 1;
+            overallAnswered += 1;
+          }
+
+          const matchesCondition =
+            conditionQuestionIndex === null || response[conditionQuestionIndex] === conditionAnswerIndex;
+
+          if (!matchesCondition) {
+            return;
+          }
+
+          matchedRespondents += 1;
+          if (targetAnswer !== null && visibleTargetAnswers.has(targetAnswer)) {
+            conditionalCounts[targetAnswer] += 1;
+            conditionalAnswered += 1;
+          }
+        });
+
+        return {
+          overallCounts,
+          conditionalCounts,
+          overallAnswered,
+          matchedRespondents,
+          conditionalAnswered
+        };
+      }
+
+      function computeHeatmap(conditionQuestionIndex, targetQuestionIndex) {
+        const conditionQuestion = questions[conditionQuestionIndex];
+        const targetQuestion = questions[targetQuestionIndex];
+        const rowAnswerIndexes = getVisibleAnswerIndexes(conditionQuestion);
+        const colAnswerIndexes = getVisibleAnswerIndexes(targetQuestion);
+        const rowLookup = new Map(rowAnswerIndexes.map((answerIdx, pos) => [answerIdx, pos]));
+        const colLookup = new Map(colAnswerIndexes.map((answerIdx, pos) => [answerIdx, pos]));
+        const matrix = rowAnswerIndexes.map(() => colAnswerIndexes.map(() => ({
+          count: 0,
+          pct: 0
+        })));
+        const rowTotals = rowAnswerIndexes.map(() => 0);
+        let pairAnswered = 0;
+
+        respondents.forEach((response) => {
+          const rowAnswer = response[conditionQuestionIndex];
+          const colAnswer = response[targetQuestionIndex];
+          if (rowAnswer === null || colAnswer === null) {
+            return;
+          }
+          const rowPos = rowLookup.get(rowAnswer);
+          const colPos = colLookup.get(colAnswer);
+          if (rowPos === undefined || colPos === undefined) {
+            return;
+          }
+          matrix[rowPos][colPos].count += 1;
+          rowTotals[rowPos] += 1;
+          pairAnswered += 1;
+        });
+
+        for (let i = 0; i < matrix.length; i += 1) {
+          for (let j = 0; j < matrix[i].length; j += 1) {
+            matrix[i][j].pct = rowTotals[i] ? (matrix[i][j].count / rowTotals[i]) * 100 : 0;
+          }
+        }
+
+        return {
+          matrix,
+          rowTotals,
+          pairAnswered,
+          rowAnswerIndexes,
+          colAnswerIndexes
+        };
+      }
+
+      function heatColor(value) {
+        const t = Math.max(0, Math.min(1, value / 100));
+        const r = Math.round(247 - 176 * t);
+        const g = Math.round(241 - 94 * t);
+        const b = Math.round(232 - 55 * t);
+        return `rgb(${r}, ${g}, ${b})`;
+      }
+
+      function textColor(value) {
+        return value > 55 ? '#f8f5ef' : '#182126';
+      }
+
+      function renderHeatmap(conditionQuestion, targetQuestion, stats) {
+        els.heatmapWrap.classList.add('visible');
+        els.rows.style.display = 'none';
+
+        if (!stats.pairAnswered) {
+          els.heatmapWrap.innerHTML = '<div class="empty">No respondents answered both selected questions under the current filters.</div>';
+          els.heatmapNote.textContent = '';
+          return;
+        }
+
+        const table = document.createElement('div');
+        table.className = 'heatmap-table';
+        table.style.gridTemplateColumns = `260px repeat(${stats.colAnswerIndexes.length}, minmax(110px, 1fr))`;
+
+        const corner = document.createElement('div');
+        corner.className = 'heatmap-corner heatmap-header';
+        corner.textContent = `${conditionQuestion.id} answers -> ${targetQuestion.id}`;
+        table.appendChild(corner);
+
+        stats.colAnswerIndexes.forEach((answerIdx) => {
+          const answer = targetQuestion.answers[answerIdx];
+          const cell = document.createElement('div');
+          cell.className = 'heatmap-header';
+          cell.textContent = answer.text;
+          table.appendChild(cell);
+        });
+
+        stats.rowAnswerIndexes.forEach((rowAnswerIdx, rowIdx) => {
+          const rowAnswer = conditionQuestion.answers[rowAnswerIdx];
+          const label = document.createElement('div');
+          label.className = 'heatmap-row-label';
+          label.innerHTML = `${rowAnswer.text}<br><span style="color:var(--muted);font-size:12px;">n=${fmtInt(stats.rowTotals[rowIdx])}</span>`;
+          table.appendChild(label);
+
+          stats.colAnswerIndexes.forEach((colAnswerIdx, colIdx) => {
+            const item = stats.matrix[rowIdx][colIdx];
+            const cell = document.createElement('div');
+            cell.className = 'heatmap-cell';
+            cell.style.background = heatColor(item.pct);
+            cell.style.color = textColor(item.pct);
+            cell.title = `${rowAnswer.text} -> ${targetQuestion.answers[colAnswerIdx].text}: ${fmtInt(item.count)} respondents, ${fmtPct(item.pct)} of this row`;
+            cell.innerHTML = `<strong>${item.pct.toFixed(1)}</strong><span>%</span><span>n=${fmtInt(item.count)}</span>`;
+            table.appendChild(cell);
+          });
+        });
+
+        els.heatmapWrap.innerHTML = '';
+        els.heatmapWrap.appendChild(table);
+        els.heatmapNote.textContent = `Each row is conditioned on one answer to the left-hand question. Cell color and percentage show P(target answer | row answer). Counts are raw respondent counts for that pair of answers.${getHiddenAnswerSummary()}`;
+      }
+
+      function renderRows(targetQuestion, stats) {
+        const { overallCounts, conditionalCounts, overallAnswered, conditionalAnswered } = stats;
+        const rows = getVisibleAnswerIndexes(targetQuestion).map((idx) => {
+          const answer = targetQuestion.answers[idx];
+          const overallPct = overallAnswered ? (overallCounts[idx] / overallAnswered) * 100 : 0;
+          const conditionalPct = conditionalAnswered ? (conditionalCounts[idx] / conditionalAnswered) * 100 : 0;
+          return {
+            idx,
+            answer,
+            overallPct,
+            conditionalPct,
+            overallCount: overallCounts[idx],
+            conditionalCount: conditionalCounts[idx]
+          };
+        });
+
+        if (els.sortByConditional.checked) {
+          rows.sort((a, b) => {
+            if (b.conditionalPct !== a.conditionalPct) {
+              return b.conditionalPct - a.conditionalPct;
+            }
+            return b.overallPct - a.overallPct;
+          });
+        }
+
+        if (!conditionalAnswered) {
+          els.rows.style.display = 'grid';
+          els.heatmapWrap.classList.remove('visible');
+          els.heatmapNote.textContent = '';
+          els.rows.innerHTML = '<div class="empty">No respondents satisfy the selected condition while also giving a visible answer to the target question.</div>';
+          return;
+        }
+
+        const fragment = document.createDocumentFragment();
+        rows.forEach((row) => {
+          const rowEl = document.createElement('article');
+          rowEl.className = 'row';
+          rowEl.innerHTML = `
+            <div class="row-label">${row.answer.text}</div>
+            <div class="track">
+              <div class="bar-overall" style="width:${row.overallPct}%"></div>
+              <div class="bar-conditional" style="width:${row.conditionalPct}%"></div>
+            </div>
+            <div class="row-metrics">
+              <strong>${fmtInt(row.conditionalCount)}</strong> conditional (${fmtPct(row.conditionalPct)})<br>
+              ${fmtInt(row.overallCount)} overall (${fmtPct(row.overallPct)})
+            </div>
+          `;
+          fragment.appendChild(rowEl);
+        });
+
+        els.rows.style.display = 'grid';
+        els.heatmapWrap.classList.remove('visible');
+        els.heatmapNote.textContent = '';
+        els.rows.innerHTML = '';
+        els.rows.appendChild(fragment);
+      }
+
+      function syncModeUI() {
+        const bars = currentMode === 'bars';
+        els.modeBars.classList.toggle('active', bars);
+        els.modeHeatmap.classList.toggle('active', !bars);
+        els.toggleNoOpinion.classList.toggle('active', filters.hideNoOpinion);
+        els.toggleOther.classList.toggle('active', filters.hideOther);
+        els.conditionAnswerField.classList.toggle('hidden', !bars);
+        els.sortField.classList.toggle('hidden', !bars);
+        if (!bars) {
+          els.conditionAnswer.disabled = true;
+        } else {
+          populateConditionAnswers();
+        }
+      }
+
+      function render() {
+        ensureDistinctQuestions();
+
+        const targetQuestionIndex = Number(els.targetQuestion.value);
+        const targetQuestion = questions[targetQuestionIndex];
+        const conditionState = getConditionState();
+        const conditionQuestion = conditionState.questionIndex === null ? null : questions[conditionState.questionIndex];
+        const conditionAnswer =
+          conditionQuestion && conditionState.answerIndex !== null
+            ? conditionQuestion.answers[conditionState.answerIndex]
+            : null;
+
+        const barsMode = currentMode === 'bars';
+        const stats = barsMode
+          ? computeDistribution(
+              targetQuestionIndex,
+              conditionState.questionIndex,
+              conditionState.answerIndex
+            )
+          : null;
+        const heatmapStats =
+          !barsMode && conditionState.questionIndex !== null
+            ? computeHeatmap(conditionState.questionIndex, targetQuestionIndex)
+            : null;
+
+        els.questionCount.textContent = fmtInt(questions.length);
+
+        if (!conditionQuestion) {
+          els.conditionTitle.textContent = 'No conditioning';
+          els.conditionPrompt.textContent = barsMode
+            ? 'Showing the target distribution across all respondents who answered the target question.'
+            : 'Select a conditioning question to build the full answer-by-answer heatmap.';
+        } else {
+          els.conditionTitle.textContent = `${conditionQuestion.id} - ${conditionQuestion.short}`;
+          els.conditionPrompt.textContent = barsMode
+            ? `${conditionQuestion.prompt}\n\nConditioned on: ${conditionAnswer.text}`
+            : conditionQuestion.prompt;
+        }
+
+        els.targetTitle.textContent = `${targetQuestion.id} - ${targetQuestion.short}`;
+        els.targetPrompt.textContent = targetQuestion.prompt;
+        els.chartTitle.textContent = barsMode
+          ? `Distribution of ${targetQuestion.short}`
+          : `Heatmap: ${conditionQuestion ? conditionQuestion.short : 'Choose a question'} vs ${targetQuestion.short}`;
+
+        if (barsMode) {
+          els.matchedRespondentsLabel.textContent = 'Matched respondents';
+          els.targetSampleLabel.textContent = 'Target sample';
+          els.matchedRespondents.textContent = fmtInt(stats.matchedRespondents);
+          els.targetSample.textContent = fmtInt(stats.conditionalAnswered);
+          els.legendLabel1.textContent = 'Overall distribution';
+          els.legendLabel2.textContent = 'Conditional distribution';
+          els.legendSwatch1.style.background = 'linear-gradient(90deg, rgba(200,181,141,0.72), rgba(184,163,119,0.85))';
+          els.legendSwatch2.style.background = 'linear-gradient(90deg, rgba(14,107,119,0.95), rgba(30,134,145,0.95))';
+        } else {
+          els.matchedRespondentsLabel.textContent = 'Pair sample';
+          els.targetSampleLabel.textContent = 'Condition answers';
+          els.matchedRespondents.textContent = conditionQuestion ? fmtInt(heatmapStats.pairAnswered) : '0';
+          els.targetSample.textContent = conditionQuestion ? fmtInt(conditionQuestion.answers.length) : '0';
+          els.legendLabel1.textContent = 'Lower conditional probability';
+          els.legendLabel2.textContent = 'Higher conditional probability';
+          els.legendSwatch1.style.background = 'linear-gradient(90deg, rgb(247,241,232), rgb(233,223,203))';
+          els.legendSwatch2.style.background = 'linear-gradient(90deg, rgb(185,147,177), rgb(71,98,177))';
+        }
+
+        if (barsMode && !conditionQuestion) {
+          els.chartSubtitle.textContent = `Unconditional distribution across ${fmtInt(stats.conditionalAnswered)} respondents who answered ${targetQuestion.id}.${getHiddenAnswerSummary()}`;
+        } else if (barsMode) {
+          els.chartSubtitle.textContent = `Conditional on ${conditionQuestion.id} = "${conditionAnswer.text}". ${fmtInt(stats.matchedRespondents)} respondents match the condition, and ${fmtInt(stats.conditionalAnswered)} also answered ${targetQuestion.id} with a visible answer.${getHiddenAnswerSummary()}`;
+        } else if (!conditionQuestion) {
+          els.chartSubtitle.textContent = 'Choose a conditioning question to see P(target answer | conditioning answer) across all answer pairs.';
+        } else {
+          els.chartSubtitle.textContent = `Rows correspond to answers of ${conditionQuestion.id}; columns correspond to answers of ${targetQuestion.id}. The matrix is normalized row by row. ${fmtInt(heatmapStats.pairAnswered)} respondents answered both questions with visible answers.${getHiddenAnswerSummary()}`;
+        }
+
+        if (barsMode) {
+          renderRows(targetQuestion, stats);
+        } else if (conditionQuestion) {
+          renderHeatmap(conditionQuestion, targetQuestion, heatmapStats);
+        } else {
+          els.rows.style.display = 'none';
+          els.heatmapWrap.classList.add('visible');
+          els.heatmapWrap.innerHTML = '<div class="empty">Select a conditioning question to render the question-pair heatmap.</div>';
+          els.heatmapNote.textContent = '';
+        }
+      }
+
+      populateQuestionSelects();
+      populateConditionAnswers();
+      syncModeUI();
+      render();
+
+      els.conditionQuestion.addEventListener('change', () => {
+        if (currentMode === 'bars') {
+          populateConditionAnswers();
+        }
+        render();
+      });
+      els.conditionAnswer.addEventListener('change', render);
+      els.targetQuestion.addEventListener('change', render);
+      els.sortByConditional.addEventListener('change', render);
+      els.modeBars.addEventListener('click', () => {
+        currentMode = 'bars';
+        syncModeUI();
+        render();
+      });
+      els.modeHeatmap.addEventListener('click', () => {
+        currentMode = 'heatmap';
+        syncModeUI();
+        render();
+      });
+      els.toggleNoOpinion.addEventListener('click', () => {
+        filters.hideNoOpinion = !filters.hideNoOpinion;
+        populateConditionAnswers();
+        syncModeUI();
+        render();
+      });
+      els.toggleOther.addEventListener('click', () => {
+        filters.hideOther = !filters.hideOther;
+        populateConditionAnswers();
+        syncModeUI();
+        render();
+      });
+    })();
+  </script>
+</body>
+</html>
