@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>APS Survey Conditional Dashboard</title>
+  <title>Big Mysteries Survey Dashboard</title>
   <style>
     :root {
       --paper: #f3efe3;
@@ -84,6 +84,40 @@
       line-height: 1.5;
       font-size: 16px;
       color: rgba(246, 244, 238, 0.9);
+    }
+
+    .resource-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .resource-links a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 8px 13px;
+      border: 1px solid rgba(246, 244, 238, 0.28);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff7e8;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
+    }
+
+    .resource-links a:hover,
+    .resource-links a:focus-visible {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.16);
+      border-color: rgba(246, 244, 238, 0.52);
+      outline: none;
     }
 
     .grid {
@@ -524,11 +558,17 @@
   <main class="shell">
     <section class="hero">
       <div class="kicker">Interactive conditional survey explorer</div>
-      <h1>APS Big Mysteries Survey Dashboard</h1>
+      <h1>Big Mysteries Survey Dashboard</h1>
       <p>
         Explore how the distribution of answers to one survey question shifts when conditioning on a specific answer to another question.
         The chart overlays the unconditional distribution in sand and the conditional distribution in teal.
       </p>
+      <nav class="resource-links" aria-label="Survey resources">
+        <a href="./press-release.html">Press release</a>
+        <a href="./FINAL_Big%20Mysteries%20in%20Physics%20Survey_arXiv.xlsx">Anonymized data</a>
+        <a href="https://www.youtube.com/watch?v=q9ou01MYxQ0">YouTube teaser</a>
+        <a href="https://www.youtube.com/watch?v=6B004Gsv9Ks">YouTube video</a>
+      </nav>
     </section>
 
     <section class="grid">
